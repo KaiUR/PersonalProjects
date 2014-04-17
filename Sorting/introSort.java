@@ -16,9 +16,12 @@ public class Introsort
 	private static int heapSize;
 
 	/**
+	 * This method controls the sort of the array passed in. It uses the insertionSortLimit 
+	 * to check if insertion sort is to be used or quick sort
 	 * 
-	 * @param array
-	 * @param comp
+	 * 
+	 * @param array The array to be sorted
+	 * @param comp The comparator
 	 */
 	public static <type> void sort(type[] array, Comparator<type> comp)
 	{
@@ -37,9 +40,10 @@ public class Introsort
 	}
 
 	/**
+	 * This is the insertion sort algorithm
 	 * 
-	 * @param array
-	 * @param comp
+	 * @param array The array to sort
+	 * @param comp The comparator
 	 */
 	private static <type> void insertionSort(type[] array, Comparator<type> comp)
 	{
@@ -56,12 +60,15 @@ public class Introsort
 	}
 
 	/**
+	 * This is the quicksort meathod, this method quick sorts the array and in each 
+	 * recursion the depth limit is reduced by 1, until it is 0, then heapsort is used to
+	 * finish the sort
 	 * 
-	 * @param array
-	 * @param start
-	 * @param end
-	 * @param comp
-	 * @param depthLimit
+	 * @param array The array to sort
+	 * @param start The starting index
+	 * @param end The ending index
+	 * @param comp The comparator
+	 * @param depthLimit The depth limit
 	 */
 	private static <type> void quickSort(type[] array, int start, int end, Comparator<type> comp,
 			int depthLimit)
@@ -88,12 +95,13 @@ public class Introsort
 	}
 
 	/**
+	 * This method is used to find the meadian of three
 	 * 
-	 * @param array
-	 * @param start
-	 * @param end
-	 * @param comp
-	 * @return
+	 * @param array The array to work on
+	 * @param start The starting index
+	 * @param end The ending index
+	 * @param comp The comparator
+	 * @return The index of the meadian
 	 */
 	private static <type> int medianOfThree(type[] array, int start, int end, Comparator<type> comp)
 	{
@@ -115,13 +123,15 @@ public class Introsort
 	}
 
 	/**
+	 * This is the partition method for quick sort
 	 * 
-	 * @param array
-	 * @param start
-	 * @param pivot
-	 * @param end
-	 * @param comp
-	 * @return
+	 * 
+	 * @param array The array to work on
+	 * @param start The starting index
+	 * @param pivot The index of the pivot
+	 * @param end The ending index
+	 * @param comp The comparator
+	 * @return The index of the pivot
 	 */
 	private static <type> int inplacPartition(type[] array, int start, int pivot, int end,
 			Comparator<type> comp)
@@ -145,11 +155,12 @@ public class Introsort
 	}
 
 	/**
+	 * This method starts the heap sort on a portion of the array
 	 * 
-	 * @param array
-	 * @param start
-	 * @param end
-	 * @param comp
+	 * @param array The array to sort
+	 * @param start The starting index
+	 * @param end The ending index
+	 * @param comp The comparator
 	 */
 	private static <type> void heapSort(type[] array, int start, int end, Comparator<type> comp)
 	{
@@ -164,11 +175,12 @@ public class Introsort
 	}
 
 	/**
+	 * This method builds the head for the heap sort algorithm
 	 * 
-	 * @param array
-	 * @param start
-	 * @param end
-	 * @param comp
+	 * @param array The array to sort
+	 * @param start The satrting position in  the array
+	 * @param end The ending position in the array
+	 * @param comp The comparator
 	 */
 	private static <type> void buildHeap(type[] array, int start, int end, Comparator<type> comp)
 	{
@@ -181,10 +193,11 @@ public class Introsort
 	}
 
 	/**
+	 * This is the heapify method for heasort
 	 * 
-	 * @param array
-	 * @param index
-	 * @param comp
+	 * @param array  The array
+	 * @param index The index to heapify
+	 * @param comp The comparator
 	 */
 	private static <type> void heap(type[] array, int index, Comparator<type> comp)
 	{
@@ -214,10 +227,11 @@ public class Introsort
 	}
 
 	/**
+	 * This method is used to swap element in the array
 	 * 
-	 * @param array
-	 * @param index1
-	 * @param index2
+	 * @param array The array to work on
+	 * @param index1 The first element to swap
+	 * @param index2 The second element to swap
 	 */
 	private static <type> void swap(type[] array, int index1, int index2)
 	{
