@@ -34,11 +34,19 @@ int main(void)
 
 	char keyc[BUFFER];
 	printf("Please enter a key: ");
-	gets(keyc);
+	
+	char character;
+	int i = 0;
+	while((character = getchar()) != '\n'){
+		keyc[i] = character;
+		i++;
+	}
+	keyc[i] = '\0';
+	
 	int key[sizeof(keyc)];
 
 	int index;
-	for(index = 0; keyc[index] != '\n'; index++)
+	for(index = 0; index < i; index++)
 	{
 		key[index] = keyc[index];
 	}
