@@ -1,0 +1,79 @@
+#include "resource.h"
+#include "windows.h"
+
+/*
+ ============================================================================
+ 	MAIN MENU
+ ============================================================================
+ */
+IDR_MAIN_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+    	MENUITEM "&New", ID_FILE_NEW
+        MENUITEM "E&xit", ID_FILE_EXIT
+    END
+
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help", ID_HELP_HELP
+        MENUITEM "&About", ID_HELP_ABOUT
+    END
+END
+
+/*
+ ============================================================================
+ 	ICON RESOURCES
+ ============================================================================
+ */
+IDI_MYICON ICON ".\\Data\\myicon.ico"
+
+/*
+ ============================================================================
+ 	ABOUT DIALOG
+ ============================================================================
+ */
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 239, 66
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mine Sweeper About"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,174,18,50,14
+    GROUPBOX        "About:",IDC_STATIC,7,7,225,52
+    LTEXT           "Calculate prime numbers created\r\n\r\nby Kai Rathjen\r\n\r\nVersion 1.0",
+                    IDC_STATIC,16,18,144,33
+END
+
+/*
+ ============================================================================
+ 	HELP DIALOG
+ ============================================================================
+ */
+IDD_HELP DIALOG DISCARDABLE  0, 0, 239, 250
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mine Sweeper Help"
+FONT 8, "MS Sans Serif"
+BEGIN
+  	DEFPUSHBUTTON "&OK", IDOK, 174, 200, 50, 14 
+  	GROUPBOX "Help:", IDC_STATIC, 7, 7, 225, 230 
+   	LTEXT "Enter a number, and the application will calculate all prim numbers in that range.", 
+   			IDC_STATIC, 16, 18, 144, 200 
+END
+
+
+/*
+ ============================================================================
+ 	NEW INPUT DIALOG
+ ============================================================================
+ */
+IDD_NEW DIALOGEX DISCARDABLE 0, 0, 250, 100
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New Calculation"
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+FONT 9, "MS Sans Serif"
+{
+   DEFPUSHBUTTON "&OK", IDOK, 65, 79, 50, 11 
+   DEFPUSHBUTTON "&Cancel", IDCANCEL, 150, 79, 50, 11 
+   EDITTEXT IDE_INPUT_NUMBER, 120, 10, 100, 14 
+   LTEXT "Enter numer to calculate up to:", IDC_STATIC, 10, 10, 100, 14 
+}
