@@ -1,0 +1,168 @@
+#include "resource.h"
+#include "windows.h"
+
+/*
+ ============================================================================
+ 	MAIN MENU
+ ============================================================================
+ */
+IDR_MAIN_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+    	MENUITEM "&New Game", ID_FILE_NEW_GAME
+    	MENUITEM "&Replay", ID_FILE_REPLAY_GAME
+        MENUITEM "E&xit", ID_FILE_EXIT
+    END
+
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help", ID_HELP_HELP
+        MENUITEM "&About", ID_HELP_ABOUT
+    END
+END
+
+/*
+ ============================================================================
+ 	ICON RESOURCES
+ ============================================================================
+ */
+IDI_MYICON ICON ".\\Data\\menu_one.ico"
+
+/*
+ ============================================================================
+ 	BITMAP RESOURCES
+ ============================================================================
+ */
+IDB_BLANK_SPACE BITMAP  DISCARDABLE ".\\Data\\blank_space.bmp"
+IDB_BLANK_SPACE_EMPTY BITMAP  DISCARDABLE ".\\Data\\blank_space_empty.bmp"
+IDB_MINE_BLACK BITMAP  DISCARDABLE ".\\Data\\mine_black.bmp"
+IDB_MINE_RED BITMAP  DISCARDABLE ".\\Data\\mine_red.bmp"
+IDB_SPACE_1 BITMAP  DISCARDABLE ".\\Data\\space_1.bmp"
+IDB_SPACE_2 BITMAP  DISCARDABLE ".\\Data\\space_2.bmp"
+IDB_SPACE_3 BITMAP  DISCARDABLE ".\\Data\\space_3.bmp"
+IDB_SPACE_4 BITMAP  DISCARDABLE ".\\Data\\space_4.bmp"
+IDB_SPACE_5 BITMAP  DISCARDABLE ".\\Data\\space_5.bmp"
+IDB_SPACE_6 BITMAP  DISCARDABLE ".\\Data\\space_6.bmp"
+IDB_SPACE_7 BITMAP  DISCARDABLE ".\\Data\\space_7.bmp"
+IDB_SPACE_8 BITMAP  DISCARDABLE ".\\Data\\space_8.bmp"
+IDB_SPACE_FLAG BITMAP  DISCARDABLE ".\\Data\\space_flag.bmp"
+
+/*
+ ============================================================================
+ 	ABOUT DIALOG
+ ============================================================================
+ */
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 239, 66
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mine Sweeper About"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,174,18,50,14
+    GROUPBOX        "About:",IDC_STATIC,7,7,225,52
+    LTEXT           "Mine Sweeper created\r\n\r\nby Kai Rathjen\r\n\r\nVersion 1.0",
+                    IDC_STATIC,16,18,144,33
+END
+
+/*
+ ============================================================================
+ 	HELP DIALOG
+ ============================================================================
+ */
+IDD_HELP DIALOG DISCARDABLE  0, 0, 239, 250
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mine Sweeper Help"
+FONT 8, "MS Sans Serif"
+BEGIN
+  	DEFPUSHBUTTON "&OK", IDOK, 174, 200, 50, 14 
+  	GROUPBOX "Help:", IDC_STATIC, 7, 7, 225, 230 
+   	LTEXT "The objective of the game is to find all of the mines.\n\nClick on a space to reveal it."
+   			" If you hit a mine it is game over. The first move will never be a mine, unless you replay"
+   			" the game.\n\nYou can right click to add a flag, if you found all the mines by marking them"
+   			" you win or if you reveal all other spaces except the mines you also win. You cant reveal a "
+   			"space that has a flag on it, remove the flag first. Right click to remove flags.\n\nWhen you"
+   			" reveal spaces you will either find a mine, a emptry space or a number. The number represents"
+   			" the amount of mines that are in the 8 spaces around the space just revealed.\n\nGood luck\n", 
+   			IDC_STATIC, 16, 18, 144, 200 
+END
+
+/*
+ ============================================================================
+ 	NEW GAME DIALOG
+ ============================================================================
+ */
+IDD_NEW_GAME DIALOG DISCARDABLE  0, 0, 70, 110
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mine Sweeper New Game"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Easy",	IDP_EASY,10,10,50,14
+    DEFPUSHBUTTON   "&Normal",	IDP_NORMAL,10,30,50,14
+    DEFPUSHBUTTON   "&Hard",	IDP_HARD,10,50,50,14
+    DEFPUSHBUTTON   "&Custom",	IDP_CUSTOM,10,70,50,14
+    DEFPUSHBUTTON   "&Cancel",	IDCANCEL,10,90,50,14
+END
+
+/*
+ ============================================================================
+ 	REPLAY GAME DIALOG
+ ============================================================================
+ */
+IDD_REPLAY_GAME DIALOG DISCARDABLE  0, 0, 70, 60
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Replay"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Replay",	IDOK,10,10,50,14
+    PUSHBUTTON      "&Cancel",	IDCANCEL,10,30,50,14
+END
+
+/*
+ ============================================================================
+ 	GAME OVER DIALOG
+ ============================================================================
+ */
+IDD_GAME_OVER DIALOG DISCARDABLE  0, 0, 70, 60
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "GAME OVER"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",		IDOK,10,10,50,14
+    PUSHBUTTON      "&Cancel",	IDCANCEL,10,30,50,14
+END
+
+/*
+ ============================================================================
+ 	GAME WON DIALOG
+ ============================================================================
+ */
+IDD_GAME_WON DIALOG DISCARDABLE  0, 0, 70, 60
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "GAME WON"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",		IDOK,10,10,50,14
+    PUSHBUTTON      "&Cancel",	IDCANCEL,10,30,50,14
+END
+
+/*
+ ============================================================================
+ 	CUSTOM GAME SETTING INPUT DIALOG
+ ============================================================================
+ */
+IDD_CUSTOM_GAME DIALOGEX DISCARDABLE 0, 0, 250, 100
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Custom"
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+FONT 9, "MS Sans Serif"
+{
+   DEFPUSHBUTTON "&OK", IDOK, 65, 79, 50, 11 
+   DEFPUSHBUTTON "&Cancel", IDCANCEL, 130, 79, 50, 11 
+   EDITTEXT IDE_CUSTOM_X, 110, 10, 37, 14 
+   EDITTEXT IDE_CUSTOM_Y, 110, 30, 37, 14 
+   EDITTEXT IDE_CUSTOM_MINES, 110, 50, 37, 14 
+   LTEXT "Enter numer of colums:", IDC_STATIC, 10, 10, 82, 14 
+   LTEXT "Enter numer of mines:", IDC_STATIC, 10, 30, 82, 14 
+   LTEXT "Enter numer of rows:", IDC_STATIC, 10, 50, 82, 14 
+   LTEXT "Enter custom optios for the game:", IDC_STATIC, 160, 10, 80, 60 
+}
