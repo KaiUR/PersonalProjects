@@ -1,0 +1,168 @@
+
+Sub CATMain()
+    '----------------------------------------------------------------
+    'Description:
+    '   This script will export all points into an excel file
+    '
+    '
+    '
+    '
+    '----------------------------------------------------------------
+
+    '----------------------------------------------------------------
+    'Open Current CATIA Document
+    '---------------------------------------------------------------
+    Set ProductDocument1 = CATIA.ActiveDocument
+    
+    On Error Resume Next
+    
+    '----------------------------------------------------------------
+    'Open Excel Document
+    '----------------------------------------------------------------
+    Set objexcel = CreateObject("Excel.Application")
+    objexcel.Visible = True
+    Set objWorkbook = objexcel.workbooks.Add()
+    Set objsheet1 = objWorkbook.Sheets.Item(1)
+    objsheet1.Name = "Points_Coordinates"
+    
+    '----------------------------------------------------------------
+    'Create Headings for Excel Sheet
+    '----------------------------------------------------------------
+    objsheet1.cells(1, 1) = "Identifier"
+    objsheet1.cells(1, 2) = "type"
+    objsheet1.cells(1, 3) = "Name"
+    objsheet1.cells(1, 4) = "Point Level"
+    objsheet1.cells(1, 5) = "coord-x"
+    objsheet1.cells(1, 6) = "coord-y"
+    objsheet1.cells(1, 7) = "coord-z"
+    objsheet1.cells(1, 8) = "normal-x"
+    objsheet1.cells(1, 9) = "normal-y"
+    objsheet1.cells(1, 10) = "normal-z"
+    objsheet1.cells(1, 11) = "trimming-x"
+    objsheet1.cells(1, 12) = "trimming-y"
+    objsheet1.cells(1, 13) = "trimming-z"
+    objsheet1.cells(1, 14) = "dir-x"
+    objsheet1.cells(1, 15) = "dir-y"
+    objsheet1.cells(1, 16) = "dir-z"
+    objsheet1.cells(1, 17) = "length"
+    objsheet1.cells(1, 18) = "width"
+    objsheet1.cells(1, 19) = "radius"
+    objsheet1.cells(1, 20) = "tol-x-lower"
+    objsheet1.cells(1, 21) = "tol-x-upper"
+    objsheet1.cells(1, 22) = "tol-y-lower"
+    objsheet1.cells(1, 23) = "tol-y-upper"
+    objsheet1.cells(1, 24) = "tol-z-lower"
+    objsheet1.cells(1, 25) = "tol-z-upper"
+    objsheet1.cells(1, 26) = "tol-normal-lower"
+    objsheet1.cells(1, 27) = "tol-normal-upper"
+    objsheet1.cells(1, 28) = "tol-trim-lower"
+    objsheet1.cells(1, 29) = "tol-trim-upper"
+    objsheet1.cells(1, 30) = "tol-length-lower"
+    objsheet1.cells(1, 31) = "tol-length-upper"
+    objsheet1.cells(1, 32) = "tol-width-lower"
+    objsheet1.cells(1, 33) = "tol-width-upper"
+    objsheet1.cells(1, 34) = "tol-diameter-lower"
+    objsheet1.cells(1, 35) = "tol-diameter-upper"
+    
+    '----------------------------------------------------------------
+    'Select all points, all visible
+    '
+    ' "(CATPrtSearch.Point),scr" selects only visible points
+    ' "(CATPrtSearch.Point),all" selects all points
+    '----------------------------------------------------------------
+    ReDim coords(2) As Variant
+    ProductDocument1.Selection.Search "(CATGmoSearch.Point),scr"
+ 
+    Set Sel_temp = ProductDocument1.Selectio
+    
+    '----------------------------------------------------------------
+    'Loop Through all points
+    '----------------------------------------------------------------
+    For i = 1 To ProductDocument1.Selection.Count
+    
+        Set Selection = ProductDocument1.Selection
+        Set Element = Selection.Item(i)
+        Set Point = Element.Value
+        
+        coords = Array(0, 0, 0)
+        
+        If Element.Type <> "HybridShape" Then
+            Point.GetCoordinates (coords)
+        Else
+            Element.Copy
+            Sel_temp.Clear
+            Sel_temp.PasteSpecial "CATPrtResult"
+            Set Temp_element = Sel_temp(1)
+            Set Temp_point = Temp_element.Value
+            Temp_point.GetCoordinates (coords)
+        End If
+    
+    
+        '----------------------------------------------------------------
+        'Point name and X,Y,Z Coords
+        '----------------------------------------------------------------
+        objsheet1.cells(i + 1, 3) = Point.Name
+        objsheet1.cells(i + 1, 5) = coords(0)
+        objsheet1.cells(i + 1, 6) = coords(1)
+        objsheet1.cells(i + 1, 7) = coords(2)
+        
+        '----------------------------------------------------------------
+        'Reformat Identifier value
+        '----------------------------------------------------------------
+        Dim ident As String
+        ident = Point.Parent.Parent.Name
+        ident2 = Point.Parent.Parent.Name
+        
+        If InStr(1, ident2, "hole", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 1) = "HOL"
+        ElseIf InStr(1, ident2, "slot", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 1) = "SLO"
+        ElseIf InStr(1, ident2, "trim", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 1) = "EDG"
+        ElseIf InStr(1, ident2, "mating", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 1) = "MAT"
+        Else
+            objsheet1.cells(i + 1, 1) = ident2
+        End If
+        
+        If InStr(1, Point.Name, "NMT", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 1) = "NON"
+        End If
+        
+         
+        '----------------------------------------------------------------
+        'Reformat Points level value
+        '----------------------------------------------------------------
+        If InStr(1, Point.Parent.Parent.Parent.Name, "Level 1", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 4) = "L1"
+        ElseIf InStr(1, Point.Parent.Parent.Parent.Name, "Level 2", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 4) = "L2"
+        ElseIf InStr(1, Point.Parent.Parent.Parent.Name, "Level 3", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 4) = "L3"
+        ElseIf InStr(1, Point.Parent.Parent.Parent.Name, "Level 4", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 4) = "L4"
+        Else
+            objsheet1.cells(i + 1, 4) = Point.Parent.Parent.Parent.Name
+        End If
+        
+        '----------------------------------------------------------------
+        'Reformat type
+        '----------------------------------------------------------------
+        If InStr(1, ident, "hole", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 2) = "inspection_circle"
+        ElseIf InStr(1, ident, "slot", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 2) = "inspection_circle"
+        ElseIf InStr(1, ident, "trim", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 2) = "inspection_edge_point"
+        ElseIf InStr(1, ident, "mating", vbTextCompare) <> 0 Then
+            objsheet1.cells(i + 1, 2) = "inspection_surface_point"
+        Else
+            objsheet1.cells(i + 1, 2) = ident
+        End If
+        
+        
+    Next
+    
+    'objsheet1.Columns("A:G").EntireColumn.Autofit
+
+End Sub
