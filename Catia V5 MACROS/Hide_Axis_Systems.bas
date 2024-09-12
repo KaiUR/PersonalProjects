@@ -7,6 +7,7 @@ Sub CATMain()
     '   Macro: Hide_Axis_Systems.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: This script is designed to hide all axis systems in
     '   an open product on all levels
     '   Author: Kai-Uwe Rathjen
