@@ -5,6 +5,7 @@ Option Explicit
     '   Macro: Create_ISM_OSM_STP.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: Macro to extract ISM and OSM srfaces and save them as stp files
     '           Output files will be over ritten if they already exist
     '   Author: Kai-Uwe Rathjen
