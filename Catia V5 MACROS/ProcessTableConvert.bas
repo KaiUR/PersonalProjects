@@ -4,6 +4,7 @@ Sub CATMain()
     '   Macro: ProcessTableConvert.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: This script is designed to read the parameters of nc programs
     '       and to pase them into an new excel sheet
     '   Author: Kai-Uwe Rathjen
