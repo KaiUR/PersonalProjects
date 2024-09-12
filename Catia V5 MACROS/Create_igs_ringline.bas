@@ -5,6 +5,7 @@ Option Explicit
     '   Macro: Create_igs_ringline.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: Macro to allow user to select a number of ringlines(Curves)
     '           and an axis system. The macro will then copy these to a new part.
     '           The curves will then be transformed to the absolute axis of the part.
