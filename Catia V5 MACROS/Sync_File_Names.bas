@@ -4,6 +4,7 @@ Sub CATMain()
     '   Macro: Sync_File_Names.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: This script is designed to syncronise all filenames with
     '           the relevent part numbers
     '
