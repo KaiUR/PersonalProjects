@@ -5,6 +5,7 @@ Sub CATMain()
     '   Macro: Extract_points_to_Excel.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: This macro is used for JLR parts to fetch the points out
     '       of the measurable points geometric set and put them into an excel file.
     '       The normals and trim normals are also calculated.
