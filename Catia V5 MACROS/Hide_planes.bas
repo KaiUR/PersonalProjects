@@ -7,6 +7,7 @@ Sub CATMain()
     '   Macro: Hide_planes.bas
     '   Version: 1.0
     '   Code: CATIA VBA
+    '   Release:   V5R32
     '   Purpose: This script is designed to hide all planes in
     '   an open product on all levels
     '   Author: Kai-Uwe Rathjen
