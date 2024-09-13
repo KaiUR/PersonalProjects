@@ -61,6 +61,11 @@ Sub CATMain()
         Exit Sub
     End If
 
+    If (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProcess") Then
+        Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
+        Exit Sub
+    End If
+
     Set partCurrent = PartDocumentCurrent.Part          'Current Open Part Anchor
     rootPath = PartDocumentCurrent.path                  'Get path of original part
     rootName = PartDocumentCurrent.Name                  'Get Name of Part
@@ -177,7 +182,6 @@ Sub CATMain()
     selNew.PasteSpecial ("CATPrtResultWithOutLink")                          'Paste ISM
     selNew.Clear                                                            'Clear Selection
     
-    'PartDocumentNew.SaveAs rootPath & "\" & rootName & "_ISM" & ".stp"     'Save new part
     PartDocumentNew.ExportData rootPath & "\" & rootName & "_ISM", "stp"    'Export to step
     
     PartDocumentNew.Close                                               'Close new part
@@ -201,7 +205,6 @@ Sub CATMain()
     selNew.PasteSpecial ("CATPrtResultWithOutLink")                          'Paste OSM
     selNew.Clear                                                            'Clear Selection
     
-    'PartDocumentNew.SaveAs rootPath & "\" & rootName & "_OSM" & ".CATPart"     'Save new part
     PartDocumentNew.ExportData rootPath & "\" & rootName & "_OSM", "stp"    'Export to step
     
     PartDocumentNew.Close                                               'Close new part
