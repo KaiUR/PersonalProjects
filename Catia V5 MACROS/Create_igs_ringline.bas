@@ -68,6 +68,10 @@ Sub CATMain()
         Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
         Exit Sub
     End If
+    If (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProcess") Then
+        Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
+        Exit Sub
+    End If
     
     Set partCurrent = PartDocumentCurrent.Part          'Current Open Part Anchor
 
@@ -217,7 +221,6 @@ Sub CATMain()
     '----------------------------------------------------------------
     rootPath = PartDocumentCurrent.path                                'Get path of original part
     
-    'PartDocumentNew.SaveAs rootPath & "\" & partCurrent.Name & "_Ringline" & ".CATPART"    'Save new part
     PartDocumentNew.ExportData rootPath & "\" & partCurrent.Name & "_Ringline", "igs"       'Export to iges
     
     PartDocumentNew.Close                                               'Close new part
