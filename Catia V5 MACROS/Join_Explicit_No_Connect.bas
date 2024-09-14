@@ -107,7 +107,7 @@ Sub CATMain()
     
     If cCount > 2 Then
         For Index = 3 To cCount                                     'Cycle through rest of curves
-            joinCurves.AddElement (RefCurves(Index))                'Add curves to join
+            joinCurves.AddElement RefCurves(Index)                  'Add curves to join
         Next
     End If
     
