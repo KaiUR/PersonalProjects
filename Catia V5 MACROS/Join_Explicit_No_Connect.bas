@@ -124,7 +124,7 @@ Sub CATMain()
     searchName = partCurrent.InWorkObject.Name                      'Get name of in work object
     
     If StrComp(searchName, partCurrent.Bodies.Item(1).Name) = 0 Then    'If body is inwork object create new geo set
-        geoSet = partCurrent.HybridBodies.Add()                         'Add New set
+        Set geoSet = partCurrent.HybridBodies.Add()                         'Add New set
     Else
         sel.Search "(NAME =" & searchName & "),all"                     'Search for in work object
     
