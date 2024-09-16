@@ -97,11 +97,8 @@ Sub CATMain()
     Dim LogoWidthMagna As Integer
     Dim LogoHeightMagna As Integer
     
-    Dim xlcontinuous As Integer
-    Dim msoTrue As Integer
-    msoTrue = -1                                        'True
-    xlcontinuous = 1                                    'Continuous Line
-    
+    Const xlcontinuous = 1                              'Continuous Line
+    Const msoTrue = -1                                  'True
     
     '----------------------------------------------------------------
     'Colour Defenitions
