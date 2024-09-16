@@ -135,18 +135,17 @@ Sub CATMain()
     
     searchName = partCurrent.InWorkObject.Name                      'Get name of in work object
     
-    If StrComp(searchName, partCurrent.Bodies.Item(1).Name) = 0 Then    'If body is inwork object create new geo set
-        Set geoSet = partCurrent.HybridBodies.Add()                     'Add New set
-    Else
-        sel.Search "(NAME =" & searchName & "),all"                     'Search for in work object
-        
-        If (sel.Count2 <> 0) Then                                       'If result is found
-            Set geoSet = sel.Item2(1).Value                             'Anchor geo set
-            sel.Clear                                                   'Clear Selection
+    sel.Search "(NAME =" & searchName & "),all"                     'Search for in work object
+    If (sel.Count2 <> 0) Then                                       'If result is found
+        If sel.Item2(1).Type <> "Body" Then
+            Set geoSet = sel.Item2(1).Value                          'Anchor geo set
         Else
-            Set geoSet = partCurrent.HybridBodies.Add()                 'Add New set
+            Set geoSet = partCurrent.HybridBodies.Add()              'Add New set
         End If
+    Else
+        Set geoSet = partCurrent.HybridBodies.Add()                  'Add New set
     End If
+    sel.Clear                                                       'Clear Selection
     
     geoSet.AppendHybridShape joinCurves                             'Add join to set
     
