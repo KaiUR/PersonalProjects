@@ -45,6 +45,7 @@ Sub CATMain()
     Dim hybridShapesCount As Integer                                'Number of items in set
     
     Dim Error As Integer
+    Dim PPRDocumentCurrent As PPRDocument                           'PPR Document
     
     '----------------------------------------------------------------
     'Open Current Document
