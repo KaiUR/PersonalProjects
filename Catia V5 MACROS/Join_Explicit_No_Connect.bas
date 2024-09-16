@@ -51,13 +51,23 @@ Sub CATMain()
     '----------------------------------------------------------------
     Set PartDocumentCurrent = CATIA.ActiveDocument                  'Current Open Document Anchor
 
+    'If cat product is open, get first part, if no part exit macro
     If (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProduct") Then
-        Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
-        Exit Sub
-    End If
-    If (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProcess") Then
-        Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
-        Exit Sub
+        If (PartDocumentCurrent.Product.Products.Count < 1) Then
+            Error = MsgBox("No Parts found" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
+            Exit Sub
+        End If
+        Set partCurrent = PartDocumentCurrent.Product.Products.Item(1).ReferenceProduct.Parent.Part
+    'If cat process is open, get first part, if no part exit macro
+    ElseIf (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProcess") Then
+        Set PPRDocumentCurrent = PartDocumentCurrent.PPRDocument    'Anchor PPR Document
+        If (PPRDocumentCurrent.Products.Count < 1) Then
+            Error = MsgBox("No Products Found" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
+            Exit Sub
+        End If
+        Set partCurrent = PPRDocumentCurrent.Products.Item(1).ReferenceProduct.Parent.Part
+    Else
+        Set partCurrent = PartDocumentCurrent.Part                   'Current Open Part Anchor
     End If
 
     Set partCurrent = PartDocumentCurrent.Part                      'Current Open Part Anchor
@@ -125,12 +135,16 @@ Sub CATMain()
     searchName = partCurrent.InWorkObject.Name                      'Get name of in work object
     
     If StrComp(searchName, partCurrent.Bodies.Item(1).Name) = 0 Then    'If body is inwork object create new geo set
-        Set geoSet = partCurrent.HybridBodies.Add()                         'Add New set
+        Set geoSet = partCurrent.HybridBodies.Add()                     'Add New set
     Else
         sel.Search "(NAME =" & searchName & "),all"                     'Search for in work object
-    
-        Set geoSet = sel.Item2(1).Value                                 'Anchor geo set
-        sel.Clear                                                       'Clear Selection
+        
+        If (sel.Count2 <> 0) Then                                       'If result is found
+            Set geoSet = sel.Item2(1).Value                             'Anchor geo set
+            sel.Clear                                                   'Clear Selection
+        Else
+            Set geoSet = partCurrent.HybridBodies.Add()                 'Add New set
+        End If
     End If
     
     geoSet.AppendHybridShape joinCurves                             'Add join to set
