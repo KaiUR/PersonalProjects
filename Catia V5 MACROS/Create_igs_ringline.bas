@@ -57,26 +57,36 @@ Sub CATMain()
     Dim hybridBodies1 As HybridBodies                   'All geometric sets of new part
     Dim hybridBodyNew As HybridBody                     'New Geometric Set
     Dim rootPath As String                              'Path of current document
+
+    Dim Error As Integer
+    Dim PPRDocumentCurrent As PPRDocument                'PPR Document
     
     '----------------------------------------------------------------
     'Open Current Document
     '----------------------------------------------------------------
-    Set PartDocumentCurrent = CATIA.ActiveDocument      'Current Open Document Anchor
+    Set PartDocumentCurrent = CATIA.ActiveDocument                  'Current Open Document Anchor
 
+    'If cat product is open, get first part, if no part exit macro
     If (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProduct") Then
-        Dim Error As Integer
-        Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
-        Exit Sub
+        If (PartDocumentCurrent.Product.Products.Count < 1) Then
+            Error = MsgBox("No Parts found" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
+            Exit Sub
+        End If
+        Set partCurrent = PartDocumentCurrent.Product.Products.Item(1).ReferenceProduct.Parent.Part
+    'If cat process is open, get first part, if no part exit macro
+    ElseIf (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProcess") Then
+        Set PPRDocumentCurrent = PartDocumentCurrent.PPRDocument    'Anchor PPR Document
+        If (PPRDocumentCurrent.Products.Count < 1) Then
+            Error = MsgBox("No Products Found" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
+            Exit Sub
+        End If
+        Set partCurrent = PPRDocumentCurrent.Products.Item(1).ReferenceProduct.Parent.Part
+    Else
+        Set partCurrent = PartDocumentCurrent.Part                   'Current Open Part Anchor
     End If
-    If (Right(PartDocumentCurrent.Name, (Len(PartDocumentCurrent.Name) - InStrRev(PartDocumentCurrent.Name, "."))) = "CATProcess") Then
-        Error = MsgBox("This Script only works with .CATPart Files" & vbNewLine & "Please Open a .CATPart to use this script or Open part in new window", vbCritical)
-        Exit Sub
-    End If
-    
-    Set partCurrent = PartDocumentCurrent.Part          'Current Open Part Anchor
 
-    Set sel = PartDocumentCurrent.Selection             'Set up user selection
-    sel.Clear                                           'Clear Selection
+    Set sel = PartDocumentCurrent.Selection                         'Set up user selection
+    sel.Clear                                                       'Clear Selection
     
     '----------------------------------------------------------------
     'Get User selection
