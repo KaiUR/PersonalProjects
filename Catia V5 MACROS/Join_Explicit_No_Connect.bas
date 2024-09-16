@@ -120,6 +120,7 @@ Sub CATMain()
     joinCurves.SetSimplify (False)                                  'No simplify
     joinCurves.SetSuppressMode (True)                               'True is only option
     joinCurves.SetTangencyContinuity (False)                        'No tangent continuity
+    joinCurves.SetManifold (True)                                   'Check Manifold
     
     searchName = partCurrent.InWorkObject.Name                      'Get name of in work object
     
