@@ -1,4 +1,6 @@
 Attribute VB_Name = "Sync_File_Names"
+Option Explicit
+
 Sub CATMain()
     '----------------------------------------------------------------
     '   Macro: Sync_File_Names.bas
@@ -22,12 +24,33 @@ Sub CATMain()
     CATIA.StatusBar = "Sync_File_Names.bas, Version 1.0"    'Update Status Bar text
     
     '----------------------------------------------------------------
+    'Declarations
+    '----------------------------------------------------------------
+    Dim ProductDocument1 As Document
+    
+    Dim Error As Integer
+    
+    Dim docPath As String
+    Dim rootPath As String
+    Dim newSave As Integer
+    Dim newDocPath As String
+    
+    Dim objShell As Object
+    Dim objFolder As Object
+    Dim objFolderItem As Object
+    
+    Dim Index As Integer
+    
+    Dim oDoc1 As Document
+    Dim oDoc2 As Document
+    Dim oProduct1 As Product
+    Dim oPart1 As Part
+    
+    '----------------------------------------------------------------
     'Open Current Document
     '----------------------------------------------------------------
     Set ProductDocument1 = CATIA.ActiveDocument
-    Dim Error As Integer
-    Dim docPath As String
-    
+
     docPath = ProductDocument1.path
     rootPath = ProductDocument1.path
     
@@ -189,4 +212,3 @@ Sub CATMain()
     MsgBox "Sync Completed", , "SYNC COMPLETED"
     
 End Sub
-
