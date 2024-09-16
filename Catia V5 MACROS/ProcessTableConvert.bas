@@ -1,4 +1,6 @@
 Attribute VB_Name = "ProcessTableConvert"
+Option Explicit
+
 Sub CATMain()
     '----------------------------------------------------------------
     '   Macro: ProcessTableConvert.bas
@@ -34,21 +36,89 @@ Sub CATMain()
     '----------------------------------------------------------------
     CATIA.StatusBar = "ProcessTableConvert.bas, Version 1.0"    'Update Status Bar text
     
-    HeadingColour = 42
+    '----------------------------------------------------------------
+    'Declarations
+    '----------------------------------------------------------------
+    Dim HeadingCOlour As Integer
+    Dim RowColour As Integer
+    Dim BorderColour As Integer
+    
+    Dim Error As Integer
+    
+    Dim OpenDocument As Document
+    Dim OpenPPRDocument As PPRDocument
+    Dim ProcessList As CATBaseDispatch
+    
+    Dim NumberOfProcessList As Integer
+    
+    Dim Excel As Object
+    Dim workbooks As Object
+    Dim Myworkbook As Object
+    Dim objsheet1 As Object
+    
+    Dim ProcessIndex As Integer
+    Dim Process As CATBaseDispatch
+    Dim ActiveName As String
+    Dim ActiveProcess As CATBaseDispatch
+    Dim ActiveChildren As CATBaseDispatch
+    
+    Dim Quantity As Integer
+    Dim Index As Integer
+    Dim Index2 As Integer
+    Dim Index3 As Integer
+    Dim CurrentSetup As CATBaseDispatch
+    Dim programList As CATBaseDispatch
+    Dim NumberOfPrograms As Integer
+    
+    Dim Colum  As Integer
+    Dim Row As Integer
+    Dim ProgramElement As Integer
+    
+    Dim CurrentProgram As CATBaseDispatch
+    Dim ProgramName As String
+    Dim ActivityList As CATBaseDispatch
+    Dim NumberOfActivity As Integer
+    
+    Dim CurrentActivity As CATBaseDispatch
+    Dim ActivityType As String
+    Dim CurrentTool As CATBaseDispatch
+    Dim ToolNumber As Integer
+    Dim ToolName As Variant
+    
+    Dim ProgramComment As String
+    Dim NextActivity As CATBaseDispatch
+    Dim NextActivityParameters As CATBaseDispatch
+    Dim NumberOfNextActivityParametes As Integer
+    
+    Dim CurrentParameter As CATBaseDispatch
+    
+    Dim LogoHeightAuto As Integer
+    Dim LogoWidthAuto As Integer
+    Dim LogoWidthMagna As Integer
+    Dim LogoHeightMagna As Integer
+    
+    Dim xlcontinuous As Integer
+    Dim msoTrue As Integer
+    msoTrue = -1                                        'True
+    xlcontinuous = 1                                    'Continuous Line
+    
+    
+    '----------------------------------------------------------------
+    'Colour Defenitions
+    '----------------------------------------------------------------
+    HeadingCOlour = 42
     RowColour = 34
     BorderColour = 3
 
     '----------------------------------------------------------------
     'Open CATIA Process
     '----------------------------------------------------------------
-    Dim OpenDocument As Document
     Set OpenDocument = CATIA.ActiveDocument
     
     '----------------------------------------------------------------
     'Throw Error and exit if open document is not a CATPRocess
     '----------------------------------------------------------------
     If Not (Right(OpenDocument.Name, (Len(OpenDocument.Name) - InStrRev(OpenDocument.Name, "."))) = "CATProcess") Then
-        Dim Error As Integer
         Error = MsgBox("This Script only works with .CATProcess Files" & vbNewLine & "Please Open a .CATProcess to use this script", vbCritical)
         Exit Sub
     End If
@@ -78,10 +148,7 @@ Sub CATMain()
     For ProcessIndex = 1 To NumberOfProcessList
         
         Set Process = ProcessList.Item(ProcessIndex)
-    
-        Dim ActiveName As String
         ActiveName = Process.Name
-        
     
         Set ActiveProcess = OpenDocument.GetItem(ActiveName)
         
@@ -112,8 +179,8 @@ Sub CATMain()
             
                 objsheet1.Name = CurrentSetup.Name
                 
-                Set ProgramList = CurrentSetup.Programs
-                NumberOfPrograms = ProgramList.Count
+                Set programList = CurrentSetup.Programs
+                NumberOfPrograms = programList.Count
                 
                 'Exit script and give message if there is only one part operation and no programs
                 If NumberOfPrograms < 1 And Index < 3 Then
@@ -137,23 +204,23 @@ Sub CATMain()
                 'Sheet Headings
                 '----------------------------------------------------------------
                 objsheet1.cells(Row, Colum) = "Program Name"
-                objsheet1.cells(Row, Colum).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 1) = "Comment"
-                objsheet1.cells(Row, Colum + 1).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 1).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 2) = "Tool"
-                objsheet1.cells(Row, Colum + 2).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 2).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 3) = "Stepover"
-                objsheet1.cells(Row, Colum + 3).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 3).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 4) = "MC Tolerance"
-                objsheet1.cells(Row, Colum + 4).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 4).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 5) = "Depth of Cut"
-                objsheet1.cells(Row, Colum + 5).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 5).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 6) = "Offset on Part"
-                objsheet1.cells(Row, Colum + 6).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 6).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 7) = "Offset on Check"
-                objsheet1.cells(Row, Colum + 7).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 7).Interior.ColorIndex = HeadingCOlour
                 objsheet1.cells(Row, Colum + 8) = "Depth of cut by level for Multi-Pass"
-                objsheet1.cells(Row, Colum + 8).Interior.ColorIndex = HeadingColour
+                objsheet1.cells(Row, Colum + 8).Interior.ColorIndex = HeadingCOlour
     
                 Row = Row + 1
             
@@ -165,7 +232,7 @@ Sub CATMain()
 
                 
                 For ProgramElement = 1 To NumberOfPrograms
-                    Set CurrentProgram = ProgramList.GetElement(ProgramElement)
+                    Set CurrentProgram = programList.GetElement(ProgramElement)
                             
                     ProgramName = CurrentProgram.Name
                             
@@ -190,7 +257,6 @@ Sub CATMain()
                                 '----------------------------------------------------------------
                                 Set CurrentTool = CurrentActivity.Tool
                                 ToolNumber = CurrentTool.ToolNumber
-                                Dim ToolName As Variant
                                         
                                 Select Case ToolNumber
                                     Case 1
@@ -338,7 +404,7 @@ Skip:
                 'Add Borders to Sheet
                 '----------------------------------------------------------------
                 With objsheet1.Range("A1:I" & Row - 1).Borders
-                    .LineStyle = xlContinuous
+                    .LineStyle = xlcontinuous
                     .Color = BorderColour
                 End With
                     
@@ -459,4 +525,3 @@ SkipMagna:
     Myworkbook.Saved = True
     
 End Sub
-
