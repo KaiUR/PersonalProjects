@@ -1,3 +1,4 @@
+Attribute VB_Name = "Extract_points_to_Excel"
 
 Sub CATMain()
     '----------------------------------------------------------------
