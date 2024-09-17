@@ -141,6 +141,12 @@ Sub CATMain()
                                 Set PointsSetsToMeasureSet = PointsSetsToMeasure.Item(ToMeasureIndex)
                                 Dim ToMeasureName As String
                                 ToMeasureName = PointsSetsToMeasureSet.Name
+                                '----------------------------------------------------------------
+                                'Make Sure is point
+                                '----------------------------------------------------------------
+                                If InStr(1, ToMeasureName, "Vector", vbTextCompare) > 0 Then
+                                    GoTo SkipVector
+                                End If
                                 
                                 '----------------------------------------------------------------
                                 'Name
@@ -155,9 +161,25 @@ Sub CATMain()
                                 ElseIf InStr(1, ActivePointSetName, "Level 2", vbTextCompare) <> 0 Then
                                     objsheet1.cells(rowCount, 4) = "L2"
                                 ElseIf InStr(1, ActivePointSetName, "Level 3", vbTextCompare) <> 0 Then
-                                    objsheet1.cells(rowCount, 4) = "L3"
+                                    If InStr(1, workingName, "OP", vbTextCompare) <> 0 Then
+                                        objsheet1.cells(rowCount, 4) = "L3_" & workingName
+                                    Else
+                                        objsheet1.cells(rowCount, 4) = "L3"
+                                    End If
+                                    
+                                    If InStr(1, PointsSetsToMeasure.Item(ToMeasureIndex + 1).Name, "trimming", vbTextCompare) > 0 Then
+                                        workingName = workingName & "trim"
+                                    End If
                                 ElseIf InStr(1, ActivePointSetName, "Level 4", vbTextCompare) <> 0 Then
-                                    objsheet1.cells(rowCount, 4) = "L4"
+                                    If InStr(1, workingName, "OP", vbTextCompare) <> 0 Then
+                                        objsheet1.cells(rowCount, 4) = "L4_" & workingName
+                                    Else
+                                        objsheet1.cells(rowCount, 4) = "L4"
+                                    End If
+                                    
+                                    If InStr(1, PointsSetsToMeasure.Item(ToMeasureIndex + 1).Name, "trimming", vbTextCompare) > 0 Then
+                                        workingName = workingName & "trim"
+                                    End If
                                 Else
                                     objsheet1.cells(rowCount, 4) = ActivePointSetName
                                 End If
@@ -425,6 +447,9 @@ EndSlot:
                                 'Increment row count
                                 '----------------------------------------------------------------
                                 rowCount = rowCount + 1
+SkipVector:
+                                
+                                If rowCount > 30 Then Exit Sub     'For Testing / Debuging
                             Next
                         Next
                     End If
