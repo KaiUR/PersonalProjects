@@ -25,7 +25,6 @@ Sub CATMain()
     'Declarations
     '----------------------------------------------------------------
     Dim PartDocumentCurrent As Document                             'Current Open Document
-    Dim PartDocumentNew As Document                                 'New Document
     Dim partCurrent As Part                                         'Current Open part
     Dim sel As CATBaseDispatch                                      'User Selection
     
@@ -70,8 +69,6 @@ Sub CATMain()
     Else
         Set partCurrent = PartDocumentCurrent.Part                   'Current Open Part Anchor
     End If
-
-    Set partCurrent = PartDocumentCurrent.Part                      'Current Open Part Anchor
 
     Set sel = PartDocumentCurrent.Selection                         'Set up user selection
     sel.Clear                                                       'Clear Selection
@@ -168,13 +165,9 @@ Sub CATMain()
     hybridShapesCount = geoSet.HybridShapes.Count                   'Number of items in set
     sel.Search "(NAME =Join_Explicit.*),all"                         'Select all joins from this macro
     geoSet.HybridShapes.Item(hybridShapesCount).Name = "Join_Explicit." & sel.Count + 1 'Rename curve
+    partCurrent.InWorkObject = geoSet.HybridShapes.Item(hybridShapesCount)
     sel.Clear                                                       'Clear Selection
     
     sel.Search "(NAME =TEMP_JOIN),all"                              'Select temp_join
     sel.Delete                                                      'Delete Selection
-    
 End Sub
-
-    
-
-    
