@@ -1,4 +1,3 @@
-Attribute VB_Name = "Extract_points_to_Excel"
 
 Sub CATMain()
     '----------------------------------------------------------------
@@ -133,12 +132,12 @@ Sub CATMain()
                         
                             
                             Set PointsSetsToMeasure = current.HybridShapes
-                            PointsSetsToMeasureCount = PointsSetsToMeasure.Count
+                            pointsSetsToMeasureCount = PointsSetsToMeasure.Count
                             
                             '----------------------------------------------------------------
                             'Cycle through all points
                             '----------------------------------------------------------------
-                            For ToMeasureIndex = 1 To PointsSetsToMeasureCount
+                            For ToMeasureIndex = 1 To pointsSetsToMeasureCount
                                 Set PointsSetsToMeasureSet = PointsSetsToMeasure.Item(ToMeasureIndex)
                                 Dim ToMeasureName As String
                                 ToMeasureName = PointsSetsToMeasureSet.Name
@@ -204,8 +203,27 @@ Sub CATMain()
                                 ReDim coords(2)
                                 
                                 coords = Array(0, 0, 0)
+                                
+                                Set sel = OpenDocument.Selection
 
-                                PointsSetsToMeasureSet.GetCoordinates (coords)
+                                If StrComp(PointsSetsToMeasureSet.Type, "HybridShape") = 0 Then
+                                    sel.Clear
+                                    Set geo = pt.HybridBodies.Add()
+                                    sel.Add PointsSetsToMeasureSet
+                                    sel.Copy
+                                    sel.Clear
+                                    sel.Add geo
+                                    sel.PasteSpecial ("CATPrtResultWithOutLink")
+                                    sel.Clear
+                                    
+                                    geo.HybridShapes.Item(1).GetCoordinates (coords)
+                                    sel.Add geo
+                                    sel.Delete
+                                
+                                    OpenDocument.Selection.Search "(CATGmoSearch.Line + CATGmoSearch.Curve),all"
+                                Else
+                                    PointsSetsToMeasureSet.GetCoordinates (coords)
+                                End If
    
                                 objsheet1.cells(rowCount, 5) = Round(coords(0), 3)
                                 objsheet1.cells(rowCount, 6) = Round(coords(1), 3)
@@ -224,10 +242,26 @@ Sub CATMain()
                                     Set Line = Element.Value
                                     
                                     If StrComp(Line.Name, ToMeasureName & "_VECTOR", vbTextCompare) = 0 Then
-                                        Line.GetDirection (normalCoords)
+                                        'Line.GetDirection (normalCoords)
+                                        sel.Clear
+                                        Set geo = pt.HybridBodies.Add()
+                                        sel.Add Line
+                                        sel.Copy
+                                        sel.Clear
+                                        sel.Add geo
+                                        sel.PasteSpecial ("CATPrtResultWithOutLink")
+                                        sel.Clear
+                                        
+                                        geo.HybridShapes.Item(1).GetDirection (normalCoords)
+                                        sel.Add geo
+                                        sel.Delete
+                                    
+                                        OpenDocument.Selection.Search "(CATGmoSearch.Line + CATGmoSearch.Curve),all"
+                                        
+                                        GoTo EndNormal
                                     End If
                                 Next
-                                                          
+EndNormal:
                                 objsheet1.cells(rowCount, 8) = Round(normalCoords(0), 3)
                                 objsheet1.cells(rowCount, 9) = Round(normalCoords(1), 3)
                                 objsheet1.cells(rowCount, 10) = Round(normalCoords(2), 3)
@@ -247,10 +281,26 @@ Sub CATMain()
                                         Set Line = Element.Value
                                     
                                         If StrComp(Line.Name, ToMeasureName & "_VECTOR_TRIMMING", vbTextCompare) = 0 Then
-                                            Line.GetDirection (trimCoords)
+                                            'Line.GetDirection (trimCoords)
+                                            sel.Clear
+                                            Set geo = pt.HybridBodies.Add()
+                                            sel.Add Line
+                                            sel.Copy
+                                            sel.Clear
+                                            sel.Add geo
+                                            sel.PasteSpecial ("CATPrtResultWithOutLink")
+                                            sel.Clear
+                                            
+                                            geo.HybridShapes.Item(1).GetDirection (trimCoords)
+                                            sel.Add geo
+                                            sel.Delete
+                                        
+                                            OpenDocument.Selection.Search "(CATGmoSearch.Line + CATGmoSearch.Curve),all"
+                                            
+                                            GoTo EndTrim
                                         End If
                                     Next
-                                
+EndTrim:
                                     objsheet1.cells(rowCount, 11) = Round(trimCoords(0), 3)
                                     objsheet1.cells(rowCount, 12) = Round(trimCoords(1), 3)
                                     objsheet1.cells(rowCount, 13) = Round(trimCoords(2), 3)
@@ -276,10 +326,26 @@ Sub CATMain()
                                         Set Line = Element.Value
                                     
                                         If StrComp(Line.Name, ToMeasureName & "_DIR", vbTextCompare) = 0 Then
-                                            Line.GetDirection (slotCoords)
+                                            'Line.GetDirection (slotCoords)
+                                            sel.Clear
+                                            Set geo = pt.HybridBodies.Add()
+                                            sel.Add Line
+                                            sel.Copy
+                                            sel.Clear
+                                            sel.Add geo
+                                            sel.PasteSpecial ("CATPrtResultWithOutLink")
+                                            sel.Clear
+                                            
+                                            geo.HybridShapes.Item(1).GetDirection (slotCoords)
+                                            sel.Add geo
+                                            sel.Delete
+                                        
+                                            OpenDocument.Selection.Search "(CATGmoSearch.Line + CATGmoSearch.Curve),all"
+                                            
+                                            GoTo EndSlot
                                         End If
                                     Next
-                                
+EndSlot:
                                     objsheet1.cells(rowCount, 14) = slotCoords(0)
                                     objsheet1.cells(rowCount, 15) = slotCoords(1)
                                     objsheet1.cells(rowCount, 16) = slotCoords(2)
@@ -373,5 +439,3 @@ Sub CATMain()
     Set Selection = OpenDocument.Selection
     Selection.Clear
 End Sub
-
-
