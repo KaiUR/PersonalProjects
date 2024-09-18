@@ -18,7 +18,7 @@ Option Explicit
 Sub CATMain()
     CATIA.StatusBar = "Join_Explicit_No_Connect.bas, Version 1.0"    'Update Status Bar text
     
-    'On Error GoTo myErrorHandler
+    On Error GoTo myErrorHandler
     
     '----------------------------------------------------------------
     'Defenitions
@@ -135,7 +135,11 @@ Sub CATMain()
     joinCurves.SetManifold (True)                                   'Check Manifold
     
     searchName = partCurrent.InWorkObject.Name                      'Get name of in work object
-    Set geoSet = searchTreeGeo(searchName, partCurrent.HybridBodies) 'Search for in-Work GeoSet
+    If TypeName(partCurrent.InWorkObject) = "HybridBody" Then
+        Set geoSet = searchTreeGeo(searchName, partCurrent.HybridBodies) 'Search for in-Work GeoSet
+    Else
+        Set geoSet = partCurrent.HybridBodies.Add()                  'if not a hybridbody add new one
+    End If
     
     geoSet.AppendHybridShape joinCurves                             'Add join to set
     
