@@ -32,6 +32,7 @@ Sub CATMain()
     '----------------------------------------------------------------
     Dim oDocument As Document                                       'Current Open Document
     Dim newPart As Part                                             'Current Open part
+    Dim oldPart As Part
     Dim sel As CATBaseDispatch                                      'User Selection
 
     Dim Index As Integer                                            'Index for loops
@@ -62,6 +63,8 @@ Sub CATMain()
     Dim geoSetResult As HybridBody                                  'Geoset for result of macro
     
     Dim SelvisProperties As VisPropertySet                          'Visual Properties
+    
+    Dim tempBody As Body                                            'Temp Body for copy
 
     '----------------------------------------------------------------
     'Open Current Document
@@ -152,10 +155,34 @@ Sub CATMain()
     
     'Get Input from User, get selections untill user acepts
     '
-    '   Get Destination
+    '   Get old condition Part
     '
     InputObjectType(0) = "Part"
-    Status = sel.SelectElement3(InputObjectType, "Select Destination Part", False, CATMultiSelTriggWhenUserValidatesSelection, False)
+    Status = sel.SelectElement3(InputObjectType, "Select Old Condition Part", False, CATMultiSelTriggWhenUserValidatesSelection, False)
+    
+    If (Status = "Cancel") Then                                     'If User cancels or presses Esc, Exit Macro
+        Exit Sub
+    End If
+    
+    If sel.Count2 = 0 Then                                          'If no selection, exit
+        Exit Sub
+    End If
+    
+    If TypeName(sel.Item2(1).Value) <> "Part" Then                           'If not part
+        Error = MsgBox("You must select a Part.", vbCritical)
+        Exit Sub
+    End If
+    
+    Set oldPart = sel.Item2(1).Value                                  'Save referece
+    sel.Clear                                                       'Clear selection
+    
+    
+    
+    'Get Input from User, get selections untill user acepts
+    '
+    '   Get new condition
+    '
+    Status = sel.SelectElement3(InputObjectType, "Select New Condition Part", False, CATMultiSelTriggWhenUserValidatesSelection, False)
     
     If (Status = "Cancel") Then                                     'If User cancels or presses Esc, Exit Macro
         Exit Sub
@@ -172,7 +199,7 @@ Sub CATMain()
     
     Set newPart = sel.Item2(1).Value                                  'Save referece
     sel.Clear                                                       'Clear selection
-      
+        
     '----------------------------------------------------------------
     'Create Plane
     '----------------------------------------------------------------
@@ -207,7 +234,35 @@ Sub CATMain()
     '----------------------------------------------------------------
     'Create Section
     '----------------------------------------------------------------
-    Set refOldSolid = newPart.CreateReferenceFromObject(oldSolid)
+    
+    'Ensure workbench is Assembly design
+    
+    
+    
+    
+    
+    
+    sel.Add oldSolid                                                        'Select old solid
+    sel.Copy                                                                'Copy to clipboard
+    sel.Clear                                                               'Clear Selection
+    
+    Set tempBody = newPart.Bodies.Add                                      'Add body for paste
+    sel.Add tempBody                                                       'Select body
+    sel.PasteSpecial ("CATPrtResultWithOutLink")                            'Paste solid
+    sel.Clear                                                                'Clear Selection
+    
+    '--------------------------------------------------------------------
+    ' Need to activate part
+    '--------------------------------------------------------------------
+    
+    
+    
+    
+    
+    
+    
+    
+    Set refOldSolid = newPart.CreateReferenceFromObject(tempBody.Shapes.Item(1))
     Set oldIntersect = Wzk3D.AddNewIntersection(refNormalPlane, refOldSolid)
     oldIntersect.ExtendMode = 0                                         'No extend for either
     
@@ -223,7 +278,7 @@ Sub CATMain()
     '----------------------------------------------------------------
     'Results
     '----------------------------------------------------------------
-    Set geoSetResult = newPart.HybridBodies.Add                       'Add result Set
+    Set geoSetResult = newPart.HybridBodies.Add                     'Add result Set
     geoSetResult.Name = RESULTNAME                                  'Rename Set
     
     sel.Add geoSet.HybridShapes.Item(4)                             'Select intersect 1
