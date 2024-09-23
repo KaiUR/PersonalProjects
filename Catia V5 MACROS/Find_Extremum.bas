@@ -47,6 +47,7 @@ Sub CATMain()
     Dim Msg As Integer                                                      'Message status
     
     Dim geoSet As HybridBody                                                'Current geometric set
+    Dim geoSetTemp As HybridBody                                            'Temp geometric set
     Dim Wzk3D As CATBaseDispatch                                            'HybridShapeFactoy
     Dim point As HybridShapePointCoord                                      'New point by coordinate
     
@@ -138,6 +139,7 @@ Sub CATMain()
     ' Create new set to create points
     '----------------------------------------------------------------
     Set geoSet = oPart.HybridBodies.Add                                     'Add set for result
+    Set geoSetTemp = oPart.HybridBodies.Add                                 'Add temp set
     geoSet.Name = GEOSETNAME                                                'Rename result set
     
     Set Wzk3D = oPart.HybridShapeFactory                                    'Anchor hybridshapefactory for use
@@ -151,12 +153,26 @@ Sub CATMain()
         Set refCurve = oPart.CreateReferenceFromObject(curvesSelect(Index))
         
         Set pointEx = Wzk3D.AddNewExtremum(refCurve, sDirection, GSMMax)
-        geoSet.AppendHybridShape pointEx
+        geoSetTemp.AppendHybridShape pointEx
         
         Set pointEx = Wzk3D.AddNewExtremum(refCurve, sDirection, GSMMin)
-        geoSet.AppendHybridShape pointEx
+        geoSetTemp.AppendHybridShape pointEx
     Next Index
     
     oPart.Update                                                            'Update part
+    
+    For Index = 1 To geoSetTemp.HybridShapes.count
+        sel.Add geoSetTemp.HybridShapes.Item(Index)
+    Next Index
+    
+    sel.Copy
+    sel.Clear
+    sel.Add geoSet
+    sel.PasteSpecial ("CATPrtResultWithOutLink")                            'Paste from clipboard as result without links
+    sel.Clear
+    sel.Add geoSetTemp
+    sel.Delete
+    
+    oPart.Update
 
 End Sub
