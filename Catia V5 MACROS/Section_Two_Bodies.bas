@@ -83,6 +83,16 @@ Sub CATMain()
     Set sel = oDocument.Selection                                   'Set up user selection
     sel.Clear                                                       'Clear Selection
 
+    Select Case CATIA.GetWorkbenchId                                'Get current workbench
+        Case "Assembly"                                             'If assembly or dmucheck, all ok
+            GoTo skipSelect
+        Case "DMUCheck"
+            GoTo skipSelect
+        Case Else
+            CATIA.StartWorkbench ("Assembly")                          'Otherwise start assembly workbench
+    End Select
+
+skipSelect:
     '----------------------------------------------------------------
     'Make Selection
     '----------------------------------------------------------------
@@ -234,14 +244,6 @@ Sub CATMain()
     '----------------------------------------------------------------
     'Create Section
     '----------------------------------------------------------------
-    
-    'Ensure workbench is Assembly design
-    
-    
-    
-    
-    
-    
     sel.Add oldSolid                                                        'Select old solid
     sel.Copy                                                                'Copy to clipboard
     sel.Clear                                                               'Clear Selection
@@ -250,17 +252,6 @@ Sub CATMain()
     sel.Add tempBody                                                       'Select body
     sel.PasteSpecial ("CATPrtResultWithOutLink")                            'Paste solid
     sel.Clear                                                                'Clear Selection
-    
-    '--------------------------------------------------------------------
-    ' Need to activate part
-    '--------------------------------------------------------------------
-    
-    
-    
-    
-    
-    
-    
     
     Set refOldSolid = newPart.CreateReferenceFromObject(tempBody.Shapes.Item(1))
     Set oldIntersect = Wzk3D.AddNewIntersection(refNormalPlane, refOldSolid)
@@ -272,9 +263,8 @@ Sub CATMain()
     
     geoSet.AppendHybridShape oldIntersect                               'Add intersect 1 to set
     geoSet.AppendHybridShape newIntersect                               'Add intersect 2 to set
-    
+
     newPart.Update
-    
     '----------------------------------------------------------------
     'Results
     '----------------------------------------------------------------
@@ -289,23 +279,26 @@ Sub CATMain()
     sel.PasteSpecial ("CATPrtResultWithOutLink")                    'Paste from clipboard as result without links
     sel.Clear
     
-    For Index = 1 To geoSetResult.HybridShapes.count / 2
+    For Index = 1 To geoSetResult.HybridShapes.count / 2            'Select first half
         sel.Add geoSetResult.HybridShapes.Item(Index)
-        geoSetResult.HybridShapes.Item(Index).Name = "Old_" & RESULTNAME & "." & Index
+        geoSetResult.HybridShapes.Item(Index).Name = "Old_" & RESULTNAME & "." & Index  'Rename items
     Next
-    Set SelvisProperties = sel.visProperties
-    SelvisProperties.SetRealColor 0, 255, 0, 1
+    Set SelvisProperties = sel.visProperties                        'get properties
+    SelvisProperties.SetRealColor 0, 255, 0, 1                      'Change to green
     sel.Clear
     
-    For Index = (geoSetResult.HybridShapes.count / 2) + 1 To geoSetResult.HybridShapes.count
+    For Index = (geoSetResult.HybridShapes.count / 2) + 1 To geoSetResult.HybridShapes.count    'Get other half
         sel.Add geoSetResult.HybridShapes.Item(Index)
         geoSetResult.HybridShapes.Item(Index).Name = "New_" & RESULTNAME & "." & Index
     Next
     Set SelvisProperties = sel.visProperties
-    SelvisProperties.SetRealColor 255, 0, 0, 1
+    SelvisProperties.SetRealColor 255, 0, 0, 1                      'Change to red
     sel.Clear
     
+    sel.Add tempBody                                                'select copied solid in body
     sel.Add geoSet                                                  'Select geo set
     sel.Delete                                                      'Delete
+    
+    newPart.Update                                                  'Update part
     
 End Sub
