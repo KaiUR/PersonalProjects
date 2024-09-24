@@ -18,7 +18,7 @@ Sub CATMain()
     CATIA.StatusBar = "Create_splines, Version 1.0"                         'Update Status Bar text
     
     'On Error Resume Next
-    'On Error GoTo myErrorHandler
+    On Error GoTo myErrorHandler
     
     '----------------------------------------------------------------
     'Defenitions
