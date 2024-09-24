@@ -18,6 +18,7 @@ Sub CATMain()
     CATIA.StatusBar = "Create_splines, Version 1.0"                         'Update Status Bar text
     
     'On Error Resume Next
+    On Error GoTo myErrorHandler
     
     '----------------------------------------------------------------
     'Defenitions
@@ -93,12 +94,16 @@ Sub CATMain()
         Exit Sub
     End If
     
+    'Two successive points are geometrically identical fix
+    Call RemoveSuccessivePoints
+    
     pointCount = sel.Count2                                                 'Get amount of points
     ReDim pointSelect(pointCount)                                           'Re-dimention Array
     ReDim pointRef(pointCount)                                              'Re-Dimention Array
     For Index = 1 To pointCount                                             'Store selection in array
         Set pointSelect(Index) = sel.Item2(Index).Value
     Next Index
+    
     sel.Clear
     
     '----------------------------------------------------------------
@@ -145,6 +150,20 @@ Sub CATMain()
     
     oPart.Update
 
+    Exit Sub
+    
+myErrorHandler:
+    'Handle part update errors and manifold errors
+    If StrComp("Method 'Update' of object 'Part' failed", Err.Description, vbTextCompare) = 0 Then
+        Error = MsgBox("Method 'Update' of object 'Part' failed." & vbNewLine & vbNewLine & "Try selecting a differned direction to sort or there are two points very close to each other", vbCritical)
+        
+        sel.Clear
+        Exit Sub
+    'All other errors
+    Else
+        Error = MsgBox(Err.Description, vbCritical)
+        Exit Sub
+    End If
 End Sub
 
     '----------------------------------------------------------------
@@ -196,6 +215,7 @@ Sub sortPoints(ByRef pointSelect() As AnyObject, pointCount As Integer, sX As Bo
     'Sort Points
     For lngCounter1 = 1 To pointCount
         For lngCounter2 = lngCounter1 + 1 To pointCount
+        
             pointSelect(lngCounter1).GetCoordinates (coord)
             pointSelect(lngCounter2).GetCoordinates (coord2)
             
@@ -208,4 +228,43 @@ Sub sortPoints(ByRef pointSelect() As AnyObject, pointCount As Integer, sX As Bo
         Next lngCounter2
     Next lngCounter1
   
+End Sub
+
+'----------------------------------------------------
+'
+'   Sub to fix following error by removing points that are equal
+'
+'   Two successive points are geometrically identical.
+'
+'
+'
+'-----------------------------------------------------
+
+Sub RemoveSuccessivePoints()
+    Dim sel As CATBaseDispatch                                              'Selection
+    Dim coord(2) As Variant                                                 'First coord
+    Dim coord2(2) As Variant                                                'Second Coord
+    
+    Dim Index As Integer                                                    'Index for loop
+    Dim Index2 As Integer                                                   'Inside loop Index
+    Dim Size As Integer                                                     'Number of Selection
+    
+    Set sel = CATIA.ActiveDocument.Selection                                'Anchor selection
+    
+    Size = sel.Count2                                                       'Save sive of selection
+
+    For Index = 1 To Size - 1
+        sel.Item2(Index).Value.GetCoordinates (coord)                       'Get first coord
+        
+        For Index2 = Index + 1 To Size - 1
+            sel.Item2(Index2).Value.GetCoordinates (coord2)                  'Get second coord
+    
+            'If coordinates are within 0.1mm from each other remove from selection
+            If Abs(coord(0) - coord2(0)) < 0.1 And Abs(coord(1) - coord2(1)) < 0.1 And Abs(coord(2) - coord2(2)) < 0.1 Then
+                sel.Remove (Index2)
+            End If
+            
+        Next Index2
+    Next Index
+
 End Sub
