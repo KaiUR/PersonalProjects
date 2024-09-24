@@ -18,7 +18,7 @@ Sub CATMain()
     CATIA.StatusBar = "Create_splines, Version 1.0"                         'Update Status Bar text
     
     'On Error Resume Next
-    On Error GoTo myErrorHandler
+    'On Error GoTo myErrorHandler
     
     '----------------------------------------------------------------
     'Defenitions
@@ -90,7 +90,8 @@ Sub CATMain()
         Exit Sub
     End If
     
-    If sel.Count2 = 0 Then                                                  'If no selection, exit
+    If sel.Count2 < 2 Then                                                  'If no selection or less than 2, exit
+        Error = MsgBox("Select at least 2 points", vbCritical)
         Exit Sub
     End If
     
@@ -235,7 +236,9 @@ End Sub
 '   Sub to fix following error by removing points that are equal
 '
 '   Two successive points are geometrically identical.
-'
+'   This function does have a preformance penalty so if
+'   you wish you can skip this sub and make sure that you check for this error
+'   yoursel before running the macro
 '
 '
 '-----------------------------------------------------
@@ -248,22 +251,33 @@ Sub RemoveSuccessivePoints()
     Dim Index As Integer                                                    'Index for loop
     Dim Index2 As Integer                                                   'Inside loop Index
     Dim Size As Integer                                                     'Number of Selection
+    Dim rmvCount As Integer
     
     Set sel = CATIA.ActiveDocument.Selection                                'Anchor selection
     
     Size = sel.Count2                                                       'Save sive of selection
+    rmvCount = 0                                                            'Amount of items removed
 
     For Index = 1 To Size - 1
+        If Index > Size - 1 - rmvCount Then                                 'Make sure to not over-run array due to removes
+            Exit For
+        End If
+    
         sel.Item2(Index).Value.GetCoordinates (coord)                       'Get first coord
         
         For Index2 = Index + 1 To Size - 1
+            If Index2 > Size - 1 - rmvCount Then                            'Make sure to not over-run array due to removess
+                Exit For
+            End If
+        
             sel.Item2(Index2).Value.GetCoordinates (coord2)                  'Get second coord
     
             'If coordinates are within 0.1mm from each other remove from selection
             If Abs(coord(0) - coord2(0)) < 0.1 And Abs(coord(1) - coord2(1)) < 0.1 And Abs(coord(2) - coord2(2)) < 0.1 Then
                 sel.Remove (Index2)
+                rmvCount = rmvCount + 1
             End If
-            
+               
         Next Index2
     Next Index
 
