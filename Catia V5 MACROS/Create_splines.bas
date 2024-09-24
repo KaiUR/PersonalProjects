@@ -108,22 +108,6 @@ Sub CATMain()
 
     Call sortPoints(pointSelect, pointCount, SelectXYZ.OptionButton1, SelectXYZ.OptionButton2, SelectXYZ.OptionButton3) 'Call insertion sort sub
     
-    '====================================================================
-    '
-    '   Degbug Start
-    '
-    '   Print array after sorting to see what we get
-    '=====================================================================
-    Call debugPointArray(pointSelect, pointCount)
-    
-    Exit Sub
-    '====================================================================
-    '
-    '   Degbug End
-    '
-    '
-    '=====================================================================
-    
     '----------------------------------------------------------------
     ' Create spline
     '----------------------------------------------------------------
@@ -188,114 +172,40 @@ End Sub
 Sub sortPoints(ByRef pointSelect() As AnyObject, pointCount As Integer, sX As Boolean, sY As Boolean, sZ As Boolean)
     Dim lngCounter1 As Long                                                 'Index for loops
     Dim lngCounter2 As Long                                                 'Index for loops
-    Dim coord(3) As Variant                                                 'Coordinates
-    Dim coord2(3) As Variant                                                'Coordinates
+    Dim coord(2) As Variant                                                 'Coordinates
+    Dim coord2(2) As Variant                                                'Coordinates
     Dim sel As CATBaseDispatch                                              'Current selection
     
-    Dim varTemp As Double                                                   'Current coordinate to be sorted
-    Dim varTemp2 As Double                                                  'Current coordinate to be sorted
-    
     Dim tempObj As AnyObject
+    Dim coordIndex As Integer
     
     Set sel = CATIA.ActiveDocument.Selection                                'Anchor selection
     sel.Clear
 
-    'Insertion sort by x coordinate
+    'Set to x, y or z coordinate
     If sX = True Then
-        For lngCounter1 = 1 To pointCount
-        
-            pointSelect(lngCounter1).GetCoordinates (coord)
-            varTemp = coord(0)
-            Set tempObj = pointSelect(lngCounter1)
-            
-            For lngCounter2 = lngCounter1 To 1 Step -1
-                If pointSelect(lngCounter1 - 1) Is Nothing Then
-                    Exit For
-                End If
-            
-                pointSelect(lngCounter1 - 1).GetCoordinates (coord2)
-                varTemp2 = coord2(0)
-            
-                If varTemp2 > varTemp Then
-                     Set pointSelect(lngCounter2) = pointSelect(lngCounter2 - 1)
-                Else
-                    Exit For
-                End If
-            Next lngCounter2
-            Set pointSelect(lngCounter2) = tempObj
-        
-        Next lngCounter1
-    
-    'Insertion sort by y coordinate
+        coordIndex = 0
     ElseIf sY = True Then
-        For lngCounter1 = 1 To pointCount
-        
-            pointSelect(lngCounter1).GetCoordinates (coord)
-            varTemp = coord(1)
-            Set tempObj = pointSelect(lngCounter1)
-            
-            For lngCounter2 = lngCounter1 To 1 Step -1
-            
-                If pointSelect(lngCounter1 - 1) Is Nothing Then
-                    Exit For
-                End If
-            
-                pointSelect(lngCounter1 - 1).GetCoordinates (coord2)
-                varTemp2 = coord2(1)
-            
-                If varTemp2 > varTemp Then
-                    Set pointSelect(lngCounter2) = pointSelect(lngCounter2 - 1)
-                Else
-                    Exit For
-                End If
-            Next lngCounter2
-            Set pointSelect(lngCounter2) = tempObj
-        
-        Next lngCounter1
-    
-    'Insertion sort by z coordinate
+        coordIndex = 1
     ElseIf sZ = True Then
-        For lngCounter1 = 1 To pointCount
-      
-            pointSelect(lngCounter1).GetCoordinates (coord)
-            varTemp = coord(2)
-            Set tempObj = pointSelect(lngCounter1)
-            
-            For lngCounter2 = lngCounter1 To 1 Step -1
-            
-                If pointSelect(lngCounter1 - 1) Is Nothing Then
-                    Exit For
-                End If
-            
-                pointSelect(lngCounter1 - 1).GetCoordinates (coord2)
-                varTemp2 = coord2(2)
-            
-                If varTemp2 > varTemp Then
-                    Set pointSelect(lngCounter2) = pointSelect(lngCounter2 - 1)
-                Else
-                    Exit For
-                End If
-            Next lngCounter2
-            Set pointSelect(lngCounter2) = tempObj
-        
-        Next lngCounter1
+        coordIndex = 2
+    Else
+        Exit Sub
     End If
-End Sub
 
-'Debug print points values
-Sub debugPointArray(points() As AnyObject, size As Integer)
-
-    Dim Index As Integer
-    Dim coords(3) As Variant
-    
-    For Index = 1 To size
-        If points(Index) Is Nothing Then
-            Debug.Print "Nothing " & Index
-        Else
-            points(Index).GetCoordinates (coords)
-            Debug.Print points(Index).Name & " " & coords(0) & " " & coords(1) & " " & coords(2)
-        End If
-
-    Next Index
-    
+    'Sort Points
+    For lngCounter1 = 1 To pointCount
+        For lngCounter2 = lngCounter1 + 1 To pointCount
+            pointSelect(lngCounter1).GetCoordinates (coord)
+            pointSelect(lngCounter2).GetCoordinates (coord2)
+            
+            If coord(coordIndex) < coord2(coordIndex) Then
+                Set tempObj = pointSelect(lngCounter2)
+                Set pointSelect(lngCounter2) = pointSelect(lngCounter1)
+                Set pointSelect(lngCounter1) = tempObj
+            End If
+            
+        Next lngCounter2
+    Next lngCounter1
+  
 End Sub
