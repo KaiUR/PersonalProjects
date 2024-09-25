@@ -48,6 +48,9 @@ Sub CATMain()
     Dim pointRef() As Reference                                             'Ref to points
     Dim pointCount As Integer                                               'Numbe rof curve selected
     Dim newSpline As HybridShapeSpline                                      'New spline created
+    Dim newPolyLine As HybridShapePolyline                                  'New polyLine created
+    
+    Dim splineSelect As Boolean                                             'True if spline, false for polyline
     
     '----------------------------------------------------------------
     'Open Current Document
@@ -114,6 +117,16 @@ Sub CATMain()
 
     Call sortPoints(pointSelect, pointCount, SelectXYZ.OptionButton1, SelectXYZ.OptionButton2, SelectXYZ.OptionButton3) 'Call insertion sort sub
     
+    splineSelect = True                                                     'Initilise Selection
+    
+    SplineOrPolyline.Show
+    
+    If SplineOrPolyline.OptionButton1 = True Then
+        splineSelect = True
+    Else
+        splineSelect = False
+    End If
+    
     '----------------------------------------------------------------
     ' Create spline
     '----------------------------------------------------------------
@@ -127,14 +140,28 @@ Sub CATMain()
         Set pointRef(Index) = oPart.CreateReferenceFromObject(pointSelect(Index))
     Next
     
-    Set newSpline = Wzk3D.AddNewSpline                                      'Add new spline
+    If splineSelect = True Then
+        Set newSpline = Wzk3D.AddNewSpline                                      'Add new spline
 
-    For Index = 1 To pointCount                                             'Add Points to spline
-        newSpline.AddPoint pointRef(Index)
-    Next Index
+        For Index = 1 To pointCount                                             'Add Points to spline
+            'Sub AddPointWithConstraintExplicit(Reference ipIAPoint,HybridShapeDirection ipIADirTangency,double iTangencyNorm,long iInverseTangency,HybridShapeDirection ipIADirCurvature,double iCurvatureRadius)
+            newSpline.AddPointWithConstraintExplicit pointRef(Index), Nothing, -1#, 1, Nothing, 0#
+        Next Index
     
-    geoSetTemp.AppendHybridShape newSpline                                  'Add spline to geometric set
+        newSpline.SetSplineType (0)                                             'Cubic spline (0) or WilsonFowler (1)
+        newSpline.SetClosing (0)                                                'Not closed
     
+        geoSetTemp.AppendHybridShape newSpline                                  'Add spline to geometric set
+    Else
+        Set newPolyLine = Wzk3D.AddNewPolyline                                  'Add new Polyline
+    
+        For Index = 1 To pointCount                                             'Add points to polyline
+            newPolyLine.InsertElement pointRef(Index), Index
+        Next Index
+    
+        geoSetTemp.AppendHybridShape newPolyLine                                'Add polyline to geo set
+    End If
+ 
     oPart.Update                                                            'Update part
     
     '----------------------------------------------------------------
@@ -149,6 +176,7 @@ Sub CATMain()
     sel.Add geoSetTemp                                                      'Delete construction
     sel.Delete
     
+    oPart.InWorkObject = geoSet.HybridShapes.Item(1)
     oPart.Update
 
     Exit Sub
@@ -158,7 +186,15 @@ myErrorHandler:
     If StrComp("Method 'Update' of object 'Part' failed", Err.Description, vbTextCompare) = 0 Then
         Error = MsgBox("Method 'Update' of object 'Part' failed." & vbNewLine & vbNewLine & "Try selecting a differned direction to sort or there are two points very close to each other", vbCritical)
         
-        sel.Clear
+        If geoSetTemp Is Nothing Then
+            sel.Clear
+        Else
+            sel.Clear
+            sel.Add geoSetTemp
+            sel.Add geoSet
+            sel.Delete
+        End If
+        
         Exit Sub
     'All other errors
     Else
