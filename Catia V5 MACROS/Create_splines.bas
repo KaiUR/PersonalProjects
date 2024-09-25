@@ -1,29 +1,30 @@
 Option Explicit
 
     '----------------------------------------------------------------
-    '   Macro: Create_splines.bas
+    '   Macro: Create_Splines_From_Excel.bas
     '   Version: 1.0
     '   Code: CATIA VBA
     '   Release:   V5R32
-    '   Purpose: Macro to create spline for points.
+    '   Purpose: Macro to import points into and create splines CATIA
     '   Author: Kai-Uwe Rathjen
-    '   Date: 23.09.24
+    '   Date: 25.09.24
     '----------------------------------------------------------------
     '
     '   Change:
     '
     '
     '----------------------------------------------------------------
+    
 Sub CATMain()
-    CATIA.StatusBar = "Create_splines, Version 1.0"                         'Update Status Bar text
+    CATIA.StatusBar = "Create_Splines_From_Excel.bas, Version 1.0"          'Update Status Bar text
     
     'On Error Resume Next
-    On Error GoTo myErrorHandler
     
     '----------------------------------------------------------------
     'Defenitions
     '----------------------------------------------------------------
-    Const GEOSETNAME = "GENERATED_SPLINES"                                    'Name of geo set
+    Const GEOSETNAME = "Spline_Import"                                      'Name of geo set
+    Const msoFileDialogOpen = 1                                             'Open File
     
     '----------------------------------------------------------------
     'Declarations
@@ -37,20 +38,23 @@ Sub CATMain()
     Dim Error As Integer
     Dim Msg As Integer                                                      'Message status
     
+    Dim dPathExcel As String                                                'Path to excel file
+    Dim oExcel As Object                                                    'Excel object
+    Dim oWorkbooks As Object                                                'Collection of workbooks
+    Dim oWorkbook As Object                                                 'Open workbook
+    Dim oSheet As Object                                                    'Open sheet
+    
     Dim geoSet As HybridBody                                                'Current geometric set
-    Dim geoSetTemp As HybridBody                                            'Temp geometric set
     Dim Wzk3D As CATBaseDispatch                                            'HybridShapeFactoy
-    
-    Dim InputObjectType(0) As Variant                                       'iFilter for user input
-    Dim Status As String                                                    'Status of User selectin
-    
-    Dim pointSelect() As AnyObject                                          'Array of points selected
-    Dim pointRef() As Reference                                             'Ref to points
-    Dim pointCount As Integer                                               'Numbe rof curve selected
+    Dim point As HybridShapePointCoord                                      'New point by coordinate
+    Dim pointRef As Reference                                               'Reference to point
     Dim newSpline As HybridShapeSpline                                      'New spline created
-    Dim newPolyLine As HybridShapePolyline                                  'New polyLine created
     
-    Dim splineSelect As Boolean                                             'True if spline, false for polyline
+    Dim xCoord As Double                                                    'X coord
+    Dim yCoord As Double                                                    'Y coord
+    Dim zCoord As Double                                                    'Z coord
+    
+    Dim row As Integer                                                      'Row count
     
     '----------------------------------------------------------------
     'Open Current Document
@@ -80,241 +84,85 @@ Sub CATMain()
     sel.Clear                                                               'Clear Selection
     
     '----------------------------------------------------------------
-    'Make Selection
+    ' Get location for excel file
     '----------------------------------------------------------------
-    InputObjectType(0) = "Point"                                            'Set input type to point
-    'Get Input from User, get selections untill user acepts
-    '
-    '   Get curves
-    '
-    Status = sel.SelectElement3(InputObjectType, "Select points", False, CATMultiSelTriggWhenUserValidatesSelection, False)
-    
-    If (Status = "Cancel") Then                                             'If User cancels or presses Esc, Exit Macro
-        Exit Sub
-    End If
-    
-    If sel.Count2 < 2 Then                                                  'If no selection or less than 2, exit
-        Error = MsgBox("Select at least 2 points", vbCritical)
-        Exit Sub
-    End If
-    
-    'Two successive points are geometrically identical fix
-    Call RemoveSuccessivePoints
-    
-    pointCount = sel.Count2                                                 'Get amount of points
-    ReDim pointSelect(pointCount)                                           'Re-dimention Array
-    ReDim pointRef(pointCount)                                              'Re-Dimention Array
-    For Index = 1 To pointCount                                             'Store selection in array
-        Set pointSelect(Index) = sel.Item2(Index).Value
-    Next Index
-    
-    sel.Clear
-    
+    dPathExcel = ""                                                         'Initilise path
+        
     '----------------------------------------------------------------
-    'Make Selection for sorting
+    ' Open Brows file prompt
     '----------------------------------------------------------------
-    SelectXYZ.Show                                                          'Show for for selection
+    Set oExcel = CreateObject("Excel.Application")                          'New Excel window
+    
+    With oExcel.Application.FileDialog(msoFileDialogOpen)                   'File dialog window
+        .AllowMultiSelect = False
+        .Show
+ 
+        If .SelectedItems.count < 1 Then
+            Error = MsgBox("Nothing selected", vbCritical)
+            Exit Sub
+        End If
+        dPathExcel = .SelectedItems(1)                                      'Save path
+    End With
 
-    Call sortPoints(pointSelect, pointCount, SelectXYZ.OptionButton1, SelectXYZ.OptionButton2, SelectXYZ.OptionButton3) 'Call insertion sort sub
-    
-    splineSelect = True                                                     'Initilise Selection
-    
-    SplineOrPolyline.Show
-    
-    If SplineOrPolyline.OptionButton1 = True Then
-        splineSelect = True
-    Else
-        splineSelect = False
-    End If
+    Set oWorkbooks = oExcel.workbooks.Open(dPathExcel, ReadOnly:=True)      'Open excel file
+    Set oWorkbook = oExcel.workbooks.Item(1)                                'Current Workbook
+    Set oSheet = oWorkbook.Sheets.Item(1)                                   'Get first sheet
+    oSheet.Activate
     
     '----------------------------------------------------------------
-    ' Create spline
+    ' Create new set to create points
     '----------------------------------------------------------------
     Set geoSet = oPart.HybridBodies.Add                                     'Add set for result
-    Set geoSetTemp = oPart.HybridBodies.Add                                 'Add temp set
     geoSet.Name = GEOSETNAME                                                'Rename result set
     
     Set Wzk3D = oPart.HybridShapeFactory                                    'Anchor hybridshapefactory for use
+    Set newSpline = Wzk3D.AddNewSpline                                      'Add new Spline
     
-    For Index = 1 To pointCount                                             'Create references for all selection
-        Set pointRef(Index) = oPart.CreateReferenceFromObject(pointSelect(Index))
-    Next
+    newSpline.SetSplineType (0)                                             'Cubic spline (0) or WilsonFowler (1)
+    newSpline.SetClosing (0)                                                'Not closed
     
-    If splineSelect = True Then
-        Set newSpline = Wzk3D.AddNewSpline                                      'Add new spline
+    '----------------------------------------------------------------
+    ' Cycle excel sheet and add new point
+    '----------------------------------------------------------------
+    row = 1                                                                 'First row
+    While oSheet.cells(row, 1) <> ""
+        If IsNumeric(oSheet.cells(row, 1)) Then                             'If number save coord
+            xCoord = oSheet.cells(row, 1)
+        Else
+            GoTo endLoop                                                    'Else skip row
+        End If
+        If IsNumeric(oSheet.cells(row, 2)) Then                             'If number save coord
+            yCoord = oSheet.cells(row, 2)
+        Else
+            GoTo endLoop                                                    'Else skip row
+        End If
+        If IsNumeric(oSheet.cells(row, 3)) Then                             'If number save coord
+            yCoord = oSheet.cells(row, 3)
+        Else
+            GoTo endLoop                                                    'Else skip row
+        End If
+        
+        Set point = Wzk3D.AddNewPointCoord(xCoord, yCoord, zCoord)          'Create new point
+        geoSet.AppendHybridShape point                                      'Add new point to set
+         
+        If oSheet.cells(row, 4) <> "" Then                                  'If name exists
+            geoSet.HybridShapes.Item(geoSet.HybridShapes.count).Name _
+            = oSheet.cells(row, 4)                                          'Rename point
+        End If
 
-        For Index = 1 To pointCount                                             'Add Points to spline
-            'Sub AddPointWithConstraintExplicit(Reference ipIAPoint,HybridShapeDirection ipIADirTangency,double iTangencyNorm,long iInverseTangency,HybridShapeDirection ipIADirCurvature,double iCurvatureRadius)
-            newSpline.AddPointWithConstraintExplicit pointRef(Index), Nothing, -1#, 1, Nothing, 0#
-        Next Index
+        Set pointRef = oPart.CreateReferenceFromObject(point)
+        newSpline.AddPointWithConstraintExplicit pointRef, Nothing, -1#, 1, Nothing, 0#
+        
+endLoop:
+        row = row + 1                                                       'Increment row count
+    Wend
     
-        newSpline.SetSplineType (0)                                             'Cubic spline (0) or WilsonFowler (1)
-        newSpline.SetClosing (0)                                                'Not closed
+    geoSet.AppendHybridShape newSpline
     
-        geoSetTemp.AppendHybridShape newSpline                                  'Add spline to geometric set
-    Else
-        Set newPolyLine = Wzk3D.AddNewPolyline                                  'Add new Polyline
-    
-        For Index = 1 To pointCount                                             'Add points to polyline
-            newPolyLine.InsertElement pointRef(Index), Index
-        Next Index
-    
-        geoSetTemp.AppendHybridShape newPolyLine                                'Add polyline to geo set
-    End If
- 
     oPart.Update                                                            'Update part
     
-    '----------------------------------------------------------------
-    ' Clean up
-    '----------------------------------------------------------------
-    sel.Add geoSetTemp.HybridShapes.Item(1)                                 'Copy spline
-    sel.Copy
-    sel.Clear
-    sel.Add geoSet
-    sel.PasteSpecial ("CATPrtResultWithOutLink")                            'Paste from clipboard as result without links
-    sel.Clear
-    sel.Add geoSetTemp                                                      'Delete construction
-    sel.Delete
-    
-    oPart.InWorkObject = geoSet.HybridShapes.Item(1)
-    oPart.Update
-
-    Exit Sub
-    
-myErrorHandler:
-    'Handle part update errors and manifold errors
-    If StrComp("Method 'Update' of object 'Part' failed", Err.Description, vbTextCompare) = 0 Then
-        Error = MsgBox("Method 'Update' of object 'Part' failed." & vbNewLine & vbNewLine & "Try selecting a differned direction to sort or there are two points very close to each other", vbCritical)
-        
-        If geoSetTemp Is Nothing Then
-            sel.Clear
-        Else
-            sel.Clear
-            sel.Add geoSetTemp
-            sel.Add geoSet
-            sel.Delete
-        End If
-        
-        Exit Sub
-    'All other errors
-    Else
-        Error = MsgBox(Err.Description, vbCritical)
-        Exit Sub
-    End If
-End Sub
-
-    '----------------------------------------------------------------
-    '   This sub will insertion sort an array of points by x, y or z
-    '   This sub will sort the array inplace, byreference
-    '
-    '   Assumption: Only one of sX, sY or sZ will be true, however the first true
-    '               value will be the one used to sort: x>y>Z
-    '
-    '   Inputs:
-    '       ByRef pointSelect() As AnyObject
-    '           This is the array to be sorted
-    '
-    '       pointCount As Integer
-    '           This is the size of the array
-    '
-    '       sX As Boolean
-    '           If true will sort by x
-    '       sY As Boolean
-    '           If true will sort by y
-    '       sZ As Boolean
-    '           If true will sort by z
-    '----------------------------------------------------------------
-    
-Sub sortPoints(ByRef pointSelect() As AnyObject, pointCount As Integer, sX As Boolean, sY As Boolean, sZ As Boolean)
-    Dim lngCounter1 As Long                                                 'Index for loops
-    Dim lngCounter2 As Long                                                 'Index for loops
-    Dim coord(2) As Variant                                                 'Coordinates
-    Dim coord2(2) As Variant                                                'Coordinates
-    Dim sel As CATBaseDispatch                                              'Current selection
-    
-    Dim tempObj As AnyObject
-    Dim coordIndex As Integer
-    
-    Set sel = CATIA.ActiveDocument.Selection                                'Anchor selection
-    sel.Clear
-
-    'Set to x, y or z coordinate
-    If sX = True Then
-        coordIndex = 0
-    ElseIf sY = True Then
-        coordIndex = 1
-    ElseIf sZ = True Then
-        coordIndex = 2
-    Else
-        Exit Sub
-    End If
-
-    'Sort Points
-    For lngCounter1 = 1 To pointCount
-        For lngCounter2 = lngCounter1 + 1 To pointCount
-        
-            pointSelect(lngCounter1).GetCoordinates (coord)
-            pointSelect(lngCounter2).GetCoordinates (coord2)
-            
-            If coord(coordIndex) < coord2(coordIndex) Then
-                Set tempObj = pointSelect(lngCounter2)
-                Set pointSelect(lngCounter2) = pointSelect(lngCounter1)
-                Set pointSelect(lngCounter1) = tempObj
-            End If
-            
-        Next lngCounter2
-    Next lngCounter1
-  
-End Sub
-
-'----------------------------------------------------
-'
-'   Sub to fix following error by removing points that are equal
-'
-'   Two successive points are geometrically identical.
-'   This function does have a preformance penalty so if
-'   you wish you can skip this sub and make sure that you check for this error
-'   yoursel before running the macro
-'
-'
-'-----------------------------------------------------
-
-Sub RemoveSuccessivePoints()
-    Dim sel As CATBaseDispatch                                              'Selection
-    Dim coord(2) As Variant                                                 'First coord
-    Dim coord2(2) As Variant                                                'Second Coord
-    
-    Dim Index As Integer                                                    'Index for loop
-    Dim Index2 As Integer                                                   'Inside loop Index
-    Dim Size As Integer                                                     'Number of Selection
-    Dim rmvCount As Integer
-    
-    Set sel = CATIA.ActiveDocument.Selection                                'Anchor selection
-    
-    Size = sel.Count2                                                       'Save sive of selection
-    rmvCount = 0                                                            'Amount of items removed
-
-    For Index = 1 To Size - 1
-        If Index > Size - 1 - rmvCount Then                                 'Make sure to not over-run array due to removes
-            Exit For
-        End If
-    
-        sel.Item2(Index).Value.GetCoordinates (coord)                       'Get first coord
-        
-        For Index2 = Index + 1 To Size - 1
-            If Index2 > Size - 1 - rmvCount Then                            'Make sure to not over-run array due to removess
-                Exit For
-            End If
-        
-            sel.Item2(Index2).Value.GetCoordinates (coord2)                  'Get second coord
-    
-            'If coordinates are within 0.1mm from each other remove from selection
-            If Abs(coord(0) - coord2(0)) < 0.1 And Abs(coord(1) - coord2(1)) < 0.1 And Abs(coord(2) - coord2(2)) < 0.1 Then
-                sel.Remove (Index2)
-                rmvCount = rmvCount + 1
-            End If
-               
-        Next Index2
-    Next Index
+    oWorkbooks.Close                                                        'Close excel
 
 End Sub
+
+
